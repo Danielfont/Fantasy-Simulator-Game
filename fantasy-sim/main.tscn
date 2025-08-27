@@ -1,0 +1,90 @@
+[gd_scene load_steps=13 format=3 uid="uid://uvufmtj6c2e6"]
+
+[ext_resource type="Script" uid="uid://cmh5rn0rrygil" path="res://main.gd" id="1_272bh"]
+[ext_resource type="PackedScene" uid="uid://dpmswq5vr60c0" path="res://mob.tscn" id="2_5vw27"]
+[ext_resource type="Script" uid="uid://bg2d2ck36r1lh" path="res://player.gd" id="3_kek77"]
+[ext_resource type="Texture2D" uid="uid://cauk17oxms3ad" path="res://art/playerGrey_up1.png" id="4_4c57u"]
+[ext_resource type="Texture2D" uid="uid://j8l1c7ri7ml" path="res://art/playerGrey_up2.png" id="5_efxa6"]
+[ext_resource type="Texture2D" uid="uid://clgxlis7hkt7h" path="res://art/playerGrey_walk1.png" id="6_dg77c"]
+[ext_resource type="Texture2D" uid="uid://dos2ji3q5xhn8" path="res://art/playerGrey_walk2.png" id="7_ycdy4"]
+[ext_resource type="Script" uid="uid://oprfcjm01w72" path="res://mob_timer.gd" id="8_4c57u"]
+[ext_resource type="PackedScene" uid="uid://tid1y0pmuxbc" path="res://hud.tscn" id="8_kek77"]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_n7ghd"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("4_4c57u")
+}, {
+"duration": 1.0,
+"texture": ExtResource("5_efxa6")
+}],
+"loop": true,
+"name": &"up",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("6_dg77c")
+}, {
+"duration": 1.0,
+"texture": ExtResource("7_ycdy4")
+}],
+"loop": true,
+"name": &"walk",
+"speed": 5.0
+}]
+
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_nvl01"]
+radius = 27.0
+height = 68.0
+
+[sub_resource type="Curve2D" id="Curve2D_w48qg"]
+_data = {
+"points": PackedVector2Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 480, 0, 0, 0, 0, 0, 480, 720, 0, 0, 0, 0, 0, 720, 0, 0, 0, 0, 0, 0)
+}
+point_count = 5
+
+[node name="Main" type="Node"]
+script = ExtResource("1_272bh")
+mob_scene = ExtResource("2_5vw27")
+
+[node name="Player" type="Area2D" parent="."]
+position = Vector2(27, 39)
+script = ExtResource("3_kek77")
+metadata/_edit_group_ = true
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="Player"]
+scale = Vector2(0.5, 0.5)
+sprite_frames = SubResource("SpriteFrames_n7ghd")
+animation = &"walk"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Player"]
+shape = SubResource("CapsuleShape2D_nvl01")
+
+[node name="MobTimer" type="Timer" parent="." groups=["mobs"]]
+wait_time = 0.5
+script = ExtResource("8_4c57u")
+
+[node name="ScoreTimer" type="Timer" parent="."]
+
+[node name="StartTimer" type="Timer" parent="."]
+wait_time = 2.0
+one_shot = true
+
+[node name="StartPosition" type="Marker2D" parent="."]
+position = Vector2(240, 450)
+
+[node name="MobPath" type="Path2D" parent="."]
+curve = SubResource("Curve2D_w48qg")
+
+[node name="MobSpawnLocation" type="PathFollow2D" parent="MobPath"]
+
+[node name="HUD" parent="." instance=ExtResource("8_kek77")]
+
+[connection signal="body_entered" from="Player" to="Player" method="_on_player_body_entered"]
+[connection signal="hit" from="Player" to="." method="game_over"]
+[connection signal="timeout" from="MobTimer" to="." method="_on_mob_timer_timeout"]
+[connection signal="timeout" from="ScoreTimer" to="." method="_on_score_timer_timeout"]
+[connection signal="timeout" from="StartTimer" to="." method="_on_start_timer_timeout"]
+[connection signal="start_game" from="HUD" to="." method="new_game"]
